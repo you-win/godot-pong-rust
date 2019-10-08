@@ -1,0 +1,16 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=true
+
+[entry]
+
+OSX.64="res://target/debug/libgame.dylib"
+X11.64="./target/debug/libgame.so"
+
+[dependencies]
+
+OSX.64=[  ]
+X11.64=[  ]

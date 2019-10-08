@@ -1,0 +1,25 @@
+# System
+.DS_Store
+*.swp
+*.swo
+.vs/
+
+# Rust
+/target/
+Cargo.lock
+**/*.rs.bk
+
+# Godot
+.import/
+export.cfg
+export_presets.cfg
+.mono/
+data_*/
+
+
+#Added by cargo
+#
+#already existing elements are commented out
+
+/target
+#**/*.rs.bk

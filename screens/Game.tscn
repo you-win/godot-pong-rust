@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://entities/paddle/Paddle.tscn" type="PackedScene" id=1]
+
+[node name="Game" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+zoom = Vector2( 0.5, 0.5 )
+
+[node name="Paddle" parent="." instance=ExtResource( 1 )]
+position = Vector2( -223, 0 )
+Side = "left"
+
+[node name="Paddle2" parent="." instance=ExtResource( 1 )]
+position = Vector2( 233, 0 )
