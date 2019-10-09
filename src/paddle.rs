@@ -32,8 +32,8 @@ impl godot::NativeClass for Paddle {
         Self::_init()
     }
 
-    fn register_properties(builder: &godot::init::ClassBuilder<Self>) {
-        builder.add_property(Property {
+    fn register_properties(_builder: &godot::init::ClassBuilder<Self>) {
+        _builder.add_property(Property {
             name: "Side",
             default: GodotString::from_str("none"),
             hint: PropertyHint::Enum {
@@ -44,7 +44,7 @@ impl godot::NativeClass for Paddle {
             usage: PropertyUsage::DEFAULT,
         });
 
-        builder.add_property(Property {
+        _builder.add_property(Property {
             name: "Speed",
             default: BASE_SPEED,
             hint: PropertyHint::Range {
@@ -74,7 +74,7 @@ impl Paddle {
     #[export]
     unsafe fn _ready(&mut self, mut owner: KinematicBody2D) {
         owner.set_physics_process(true);
-        // @TODO scary cast to KinematicBody2D that probably works
+        // TODO scary cast to KinematicBody2D that probably works
         // self.kb2d = mem::transmute::<Node, godot::KinematicBody2D>(
         //     owner
         //         .get_node(NodePath::from_str("KinematicBody2D"))
@@ -87,9 +87,7 @@ impl Paddle {
             .cast::<Sprite>()
             .expect("Unable to cast to Sprite");
 
-        godot_print!("{:?}", self.sprite.get_name());
-
-        godot_print!("paddle created!")
+        godot_print!("Paddle created!");
     }
 
     #[export]
@@ -98,7 +96,6 @@ impl Paddle {
         self.linear_velocity.y = self.target_movement;
         self.linear_velocity =
             owner.move_and_slide(self.linear_velocity, Vector2::zero(), false, 4, 0.7, true);
-        godot_print!("{:?}", self.linear_velocity);
     }
 
     #[export]
@@ -107,26 +104,26 @@ impl Paddle {
         self.target_movement = 0.0;
         match self.side.as_ref() {
             "left" => {
-                godot_print!("LEFT");
                 if Input::is_action_pressed(&input, GodotString::from_str("paddle_left_up")) {
-                    self.target_movement = -1.0;
-                } else if Input::is_action_pressed(
-                    &input,
-                    GodotString::from_str("paddle_left_down"),
-                ) {
-                    self.target_movement = 1.0;
+                    self.target_movement -= 1.0;
+                }
+                if Input::is_action_pressed(&input, GodotString::from_str("paddle_left_down")) {
+                    self.target_movement += 1.0;
+                }
+                // TODO just to demonstrate that I can manipulate child nodes
+                // Remove later, maybe
+                if Input::is_action_pressed(&input, GodotString::from_str("ui_accept")) {
+                    self.sprite.set_visible(false);
+                } else {
+                    self.sprite.set_visible(true);
                 }
             }
             "right" => {
                 if Input::is_action_pressed(&input, GodotString::from_str("paddle_right_up")) {
-                    godot_print!("UP");
-                    self.target_movement = -1.0;
-                } else if Input::is_action_pressed(
-                    &input,
-                    GodotString::from_str("paddle_right_down"),
-                ) {
-                    godot_print!("DOWN");
-                    self.target_movement = 1.0;
+                    self.target_movement -= 1.0;
+                }
+                if Input::is_action_pressed(&input, GodotString::from_str("paddle_right_down")) {
+                    self.target_movement += 1.0;
                 }
             }
             "none" => godot_print!("[ERROR] Paddle side not assigned!"),

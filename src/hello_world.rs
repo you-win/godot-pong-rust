@@ -1,4 +1,4 @@
-use gdnative::*;
+use godot::*;
 
 /// The HelloWorld "class"
 #[derive(NativeClass)]

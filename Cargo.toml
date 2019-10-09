@@ -1,10 +1,11 @@
 [package]
-name = "game"
+name = "pong"
 version = "0.1.0"
-edition = "2018"
+authors = ["Tim <theaznyune@gmail.com>"]
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
 gdnative = { git = "https://github.com/GodotNativeTools/godot-rust" }
+rand = "0.7.2"
