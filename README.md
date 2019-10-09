@@ -6,6 +6,9 @@ Pong made using Godot and Rust using the [Godot Rust Bindings](https://github.co
 Follow the instructions
 [here](https://medium.com/@recallsingularity/gorgeous-godot-games-in-rust-1867c56045e6).
 
+You will need to set up the .gdnlib paths again during initial setup. This is
+both to avoid errors and because the path is only setup for OSX.
+
 ## Controls
 
 [W][S] and [Up][Down] to move the paddles. [Enter] to hide the left paddle's sprite. [Space] to reset the scene.
