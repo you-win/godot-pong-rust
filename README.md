@@ -1,6 +1,9 @@
 # Pong
 
 Pong made using Godot and Rust using the [Godot Rust Bindings](https://github.com/GodotNativeTools/godot-rust). Initial setup done using a shell script from [here](https://gitlab.com/ardawan-opensource/gdnative-rust-setup).
+
+I posted a writeup on Reddit [here](https://www.reddit.com/r/godot/comments/dfam0p/i_made_a_pong_clone_in_godot_using_the_gdnative/).
+
 ## Quickstart
 
 Follow the instructions
@@ -8,6 +11,10 @@ Follow the instructions
 
 You will need to set up the .gdnlib paths again during initial setup. This is
 both to avoid errors and because the path is only setup for OSX.
+
+If you are using VSCode along with the Rust extension, you will need to place a `.gdignore` file in the generated rls/ directory. If you don't, Godot will try to import everything in that directory and subsequently hang.
+
+Run the default scene to play.
 
 ## Controls
 
