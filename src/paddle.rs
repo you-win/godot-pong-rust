@@ -92,10 +92,14 @@ impl Paddle {
 
     #[export]
     unsafe fn _physics_process(&mut self, mut owner: KinematicBody2D, delta: f64) {
+        let initial_position: Vector2 = owner.get_global_position();
         self.target_movement *= self.speed;
         self.linear_velocity.y = self.target_movement;
         self.linear_velocity =
             owner.move_and_slide(self.linear_velocity, Vector2::zero(), false, 4, 0.7, true);
+        let new_position: Vector2 = owner.get_global_position();
+        // Godot can't lock objects to a specific axis, so we do that manually
+        owner.set_global_position(Vector2::new(initial_position.x, new_position.y));
     }
 
     #[export]

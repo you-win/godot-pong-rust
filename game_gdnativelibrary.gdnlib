@@ -8,7 +8,9 @@ reloadable=true
 [entry]
 
 OSX.64="res://target/debug/libpong.dylib"
+X11.64="res://target/debug/libpong.so"
 
 [dependencies]
 
 OSX.64=[  ]
+X11.64=[  ]
