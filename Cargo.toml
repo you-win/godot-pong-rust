@@ -7,5 +7,5 @@ authors = ["Tim <theaznyune@gmail.com>"]
 crate-type = ["cdylib"]
 
 [dependencies]
-gdnative = { git = "https://github.com/GodotNativeTools/godot-rust" }
+gdnative = "0.7"
 rand = "0.7.2"
