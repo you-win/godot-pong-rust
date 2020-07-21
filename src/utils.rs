@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub fn lerp(start: f32, end: f32, amount: f32) -> f32 {
     // Don't do anything if they are equal
     if start == end {

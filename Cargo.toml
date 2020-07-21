@@ -2,10 +2,11 @@
 name = "pong"
 version = "0.1.0"
 authors = ["Tim <theaznyune@gmail.com>"]
+edition = "2018"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-gdnative = "0.7"
+gdnative = "0.9.0-preview.0"
 rand = "0.7.2"

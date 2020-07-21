@@ -1,7 +1,7 @@
-use godot::{
-    init::{Property, PropertyHint, PropertyUsage},
-    user_data::MutexData,
-    GodotString, KinematicBody2D, KinematicCollision2D, Node2D, NodePath, Sprite, Vector2,
+use gdnative::{
+    api::{KinematicBody2D, Node},
+    nativescript::init::property::{FloatHint, RangeHint, Usage},
+    prelude::{godot_print, methods, user_data::MutexData, GodotString, Vector2},
 };
 
 use rand::{
@@ -11,24 +11,22 @@ use rand::{
 
 use crate::utils::clamp;
 
-const BASE_SPEED: f32 = 5.0;
-const MAX_VELOCITY_X: f32 = 10.0;
-const MIN_VELOCITY_X: f32 = -10.0;
-const MAX_VELOCITY_Y: f32 = 10.0;
-const MIN_VELOCITY_Y: f32 = -10.0;
+const BASE_SPEED: f32 = 1.0;
+const MIN_VELOCITY_X: f32 = 3.0;
+const MAX_VELOCITY_X: f32 = 5.0;
+const MIN_VELOCITY_Y: f32 = 3.0;
+const MAX_VELOCITY_Y: f32 = 5.0;
 
 pub struct Ball {
     speed: f32,
     target_movement: Vector2,
-    linear_velocity: Vector2,
-    sprite: Sprite,
     rng: rand::prelude::ThreadRng,
     coin: Uniform<i32>,
 }
 
 unsafe impl Send for Ball {}
 
-impl godot::NativeClass for Ball {
+impl gdnative::prelude::NativeClass for Ball {
     type Base = KinematicBody2D;
     type UserData = MutexData<Ball>;
 
@@ -36,52 +34,38 @@ impl godot::NativeClass for Ball {
         "Ball"
     }
 
-    fn init(_owner: Self::Base) -> Self {
-        Self::_init()
+    fn init(owner: &Self::Base) -> Self {
+        Self::new(owner)
     }
 
-    fn register_properties(_builder: &godot::init::ClassBuilder<Self>) {
-        _builder.add_property(Property {
-            name: "Speed",
-            default: BASE_SPEED,
-            hint: PropertyHint::Range {
-                range: 0.0..500.0,
-                step: 1.0,
-                slider: true,
-            },
-            getter: |this: &Ball| this.speed,
-            setter: |this: &mut Ball, v| this.speed = v,
-            usage: PropertyUsage::DEFAULT,
-        });
+    fn register_properties(builder: &gdnative::nativescript::init::ClassBuilder<Self>) {
+        builder
+            .add_property("Speed")
+            .with_default(BASE_SPEED)
+            .with_hint(FloatHint::from(RangeHint::new(0.0, 500.0)))
+            .with_getter(|this: &Ball, _owner: &KinematicBody2D| this.speed)
+            .with_setter(|this: &mut Ball, _owner: &KinematicBody2D, v| this.speed = v)
+            .with_usage(Usage::DEFAULT)
+            .done();
     }
 }
 
 #[methods]
 impl Ball {
-    fn _init() -> Self {
+    fn new(_owner: &KinematicBody2D) -> Self {
         Ball {
             speed: BASE_SPEED,
             target_movement: Vector2::zero(),
-            linear_velocity: Vector2::zero(),
-            sprite: Sprite::new(),
             rng: rand::thread_rng(),
             coin: Uniform::from(0..2),
         }
     }
 
     #[export]
-    unsafe fn _ready(&mut self, mut owner: KinematicBody2D) {
-        owner.set_physics_process(true);
-
-        self.sprite = owner
-            .get_node(NodePath::from_str("Sprite"))
-            .expect("Missing Sprite node")
-            .cast::<Sprite>()
-            .expect("Unable to cast to Sprite");
-
+    unsafe fn _ready(&mut self, _owner: &KinematicBody2D) {
         match self.coin.sample(&mut self.rng) {
-            0 => self.target_movement.x = -1.0,
-            1 => self.target_movement.x = 1.0,
+            0 => self.target_movement.x = -MIN_VELOCITY_X,
+            1 => self.target_movement.x = MIN_VELOCITY_X,
             _ => godot_print!("[ERROR] Did we flip the coin onto its side?"),
         }
 
@@ -89,39 +73,52 @@ impl Ball {
     }
 
     #[export]
-    unsafe fn _physics_process(&mut self, mut owner: KinematicBody2D, delta: f64) {
-        let actual_movement: Vector2 = Vector2::new(
-            self.target_movement.x * self.speed,
-            self.target_movement.y * self.speed,
-        );
-        // self.target_movement *= self.speed;
-        self.linear_velocity = actual_movement;
-        match owner.move_and_collide(self.linear_velocity, true, true, false) {
+    unsafe fn _physics_process(&mut self, owner: &KinematicBody2D, _delta: f64) {
+        self.target_movement *= self.speed;
+        match owner.move_and_collide(self.target_movement, true, true, false) {
             Some(collision_data) => {
                 let collider = collision_data
-                    .get_collider()
-                    .expect("[ERROR] No collider in collision data")
-                    .cast::<Node2D>()
-                    .expect("[ERROR] Collided with something that is not a Node2D");
+                    .assume_unique()
+                    .collider()
+                    .unwrap()
+                    .assume_unique()
+                    .cast::<Node>()
+                    .unwrap();
                 if collider.is_in_group(GodotString::from_str("Paddles")) {
-                    let random_x = self.rng.gen_range(-1.0, 1.0);
-                    let random_y = self.rng.gen_range(-1.0, 1.0);
-                    self.target_movement.x = -self.target_movement.x;
-                    self.target_movement.y = -self.target_movement.y;
                     match self.coin.sample(&mut self.rng) {
                         0 => {
-                            self.target_movement.x = clamp(
-                                self.target_movement.x + random_x,
-                                MIN_VELOCITY_X,
-                                MAX_VELOCITY_X,
-                            );
+                            let random_x = self.rng.gen_range(-3.0, 3.0);
+                            self.target_movement.x = -self.target_movement.x;
+                            if self.target_movement.x < 0.0 {
+                                self.target_movement.x = clamp(
+                                    self.target_movement.x + random_x,
+                                    -MAX_VELOCITY_X,
+                                    -MIN_VELOCITY_X,
+                                );
+                            } else {
+                                self.target_movement.x = clamp(
+                                    self.target_movement.x + random_x,
+                                    MIN_VELOCITY_X,
+                                    MAX_VELOCITY_X,
+                                );
+                            }
                         }
                         1 => {
-                            self.target_movement.y = clamp(
-                                self.target_movement.y + random_y,
-                                MIN_VELOCITY_Y,
-                                MAX_VELOCITY_Y,
-                            );
+                            let random_y = self.rng.gen_range(-3.0, 3.0);
+                            self.target_movement.y = -self.target_movement.y;
+                            if self.target_movement.y < 0.0 {
+                                self.target_movement.y = clamp(
+                                    self.target_movement.y + random_y,
+                                    -MAX_VELOCITY_Y,
+                                    -MIN_VELOCITY_Y,
+                                );
+                            } else {
+                                self.target_movement.y = clamp(
+                                    self.target_movement.y + random_y,
+                                    MIN_VELOCITY_Y,
+                                    MAX_VELOCITY_Y,
+                                );
+                            }
                         }
                         _ => godot_print!("[ERROR] How did we mess up a coin flip?"),
                     }
